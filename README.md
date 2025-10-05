@@ -76,12 +76,8 @@ WeldPak is a powerful Next.js application that allows you to combine and minify 
 
 5. **Run the development server**
    ```bash
-   # Use Next.js API routes (default)
+   # Local development (uses Next.js API routes)
    npm run dev
-   # OR use Firebase Functions locally
-   npm run dev:firebase
-   # OR explicitly use local API
-   npm run dev:local
    ```
 
    Open [http://localhost:3000](http://localhost:3000) to view the application.
@@ -202,10 +198,42 @@ weldpak/
 
 ## Deployment
 
-### Firebase Hosting
-```bash
-npm run firebase:deploy
-```
+### Hybrid Backend Configuration
+
+WeldPak uses a hybrid backend approach:
+
+- **Local Development**: Uses Next.js API routes (`/api/*`)
+- **Production**: Uses Firebase Functions
+
+The backend is automatically selected based on the `NEXT_PUBLIC_USE_FIREBASE_FUNCTIONS` environment variable.
+
+### Firebase Deployment
+
+1. **Install Firebase CLI**
+   ```bash
+   npm install -g firebase-tools
+   ```
+
+2. **Login to Firebase**
+   ```bash
+   firebase login
+   ```
+
+3. **Upgrade to Blaze Plan** (Required for Firebase Functions)
+   - Visit: https://console.firebase.google.com/project/weldpak/usage/details
+   - Upgrade to Blaze (pay-as-you-go) plan
+
+4. **Deploy to Firebase**
+   ```bash
+   # Deploy hosting only (static version)
+   npm run firebase:deploy
+   
+   # Deploy functions only
+   npm run firebase:deploy:functions
+   
+   # Deploy everything (hosting + functions)
+   npm run firebase:deploy:all
+   ```
 
 ### Docker
 ```bash

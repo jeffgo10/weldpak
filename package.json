@@ -13,14 +13,13 @@
     "docker:dev": "docker-compose up --build",
     "docker:prod": "docker-compose --profile production up --build",
     "firebase:init": "firebase init",
-    "firebase:deploy": "npm run build && firebase deploy",
-    "firebase:deploy:functions": "USE_FIREBASE_FUNCTIONS=true npm run build && firebase deploy",
+    "firebase:deploy": "NEXT_PUBLIC_USE_FIREBASE_FUNCTIONS=true npm run build && firebase deploy --only hosting",
+    "firebase:deploy:functions": "NEXT_PUBLIC_USE_FIREBASE_FUNCTIONS=true npm run build && firebase deploy --only functions",
+    "firebase:deploy:all": "NEXT_PUBLIC_USE_FIREBASE_FUNCTIONS=true npm run build && firebase deploy",
     "firebase:emulators": "firebase emulators:start",
     "functions:install": "cd functions && npm install",
     "functions:build": "cd functions && npm run build",
-    "functions:deploy": "cd functions && npm run deploy",
-    "dev:firebase": "USE_FIREBASE_FUNCTIONS=true npm run dev",
-    "dev:local": "USE_FIREBASE_FUNCTIONS=false npm run dev"
+    "functions:deploy": "cd functions && npm run deploy"
   },
   "dependencies": {
     "@reduxjs/toolkit": "^2.9.0",
@@ -45,6 +44,7 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@next/swc-darwin-x64": "^15.5.4",
     "@tailwindcss/postcss": "^4",
     "@types/bull": "^3.15.9",
     "@types/clean-css": "^4.2.11",

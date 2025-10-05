@@ -14,8 +14,8 @@ class ApiService {
 
   constructor() {
     this.config = {
-      useFirebaseFunctions: process.env.USE_FIREBASE_FUNCTIONS === 'true',
-      firebaseFunctionsUrl: process.env.FIREBASE_FUNCTIONS_URL || '',
+      useFirebaseFunctions: process.env.NEXT_PUBLIC_USE_FIREBASE_FUNCTIONS === 'true',
+      firebaseFunctionsUrl: process.env.NEXT_PUBLIC_FIREBASE_FUNCTIONS_URL || '',
       nextApiUrl: typeof window !== 'undefined' ? window.location.origin : '',
     };
   }
