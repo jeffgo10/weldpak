@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  weldpak:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - PORT=3000
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/.next
+    restart: unless-stopped
+    networks:
+      - weldpak-network
+
+  # Redis for task scheduling (optional for future use)
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+    networks:
+      - weldpak-network
+
+  # Optional: Add a reverse proxy for production-like setup
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - weldpak
+    restart: unless-stopped
+    networks:
+      - weldpak-network
+    profiles:
+      - production
+
+networks:
+  weldpak-network:
+    driver: bridge
+
+volumes:
+  redis_data:
