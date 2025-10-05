@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useRef } from 'react';
-import { Card, Button, Alert, Row, Col, ListGroup, Badge } from 'react-bootstrap';
+import { Card, Button, Alert, ListGroup, Badge } from 'react-bootstrap';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 import { useAppSelector, useAppDispatch } from '@/store/hooks';
@@ -14,7 +14,7 @@ interface FileUploadPanelProps {
 const FileUploadPanel: React.FC<FileUploadPanelProps> = ({ fileType }) => {
   const dispatch = useAppDispatch();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { uploadedFiles, isLoading, error, activeTab } = useAppSelector((state) => state.files);
+  const { uploadedFiles, isLoading, error } = useAppSelector((state) => state.files);
 
   // Filter files by current tab
   const currentFiles = uploadedFiles.filter(file => 
@@ -26,8 +26,8 @@ const FileUploadPanel: React.FC<FileUploadPanelProps> = ({ fileType }) => {
     files: Yup.mixed()
       .required('Please select at least one file')
       .test('file-type', `Please select only ${fileType.toUpperCase()} files`, (value) => {
-        if (!value || !value.length) return true;
-        return Array.from(value).every((file: any) => 
+        if (!value || !(value as FileList).length) return true;
+        return Array.from(value as FileList).every((file: File) => 
           fileType === 'js' ? file.name.endsWith('.js') : file.name.endsWith('.css')
         );
       }),
@@ -104,7 +104,7 @@ const FileUploadPanel: React.FC<FileUploadPanelProps> = ({ fileType }) => {
             <Form>
               <div className="mb-4">
                 <Field name="files">
-                  {({ field, form }: any) => (
+                  {() => (
                     <div>
                       <input
                         ref={fileInputRef}
@@ -127,9 +127,9 @@ const FileUploadPanel: React.FC<FileUploadPanelProps> = ({ fileType }) => {
                         <p className="text-muted">
                           Select multiple {fileType.toUpperCase()} files to combine and minify
                         </p>
-                        {values.files && values.files.length > 0 && (
+                        {values.files && (values.files as FileList).length > 0 && (
                           <Badge bg="primary" className="mt-2">
-                            {values.files.length} file(s) selected
+                            {(values.files as FileList).length} file(s) selected
                           </Badge>
                         )}
                       </div>
@@ -143,7 +143,7 @@ const FileUploadPanel: React.FC<FileUploadPanelProps> = ({ fileType }) => {
                 <Button
                   type="submit"
                   variant="primary"
-                  disabled={!values.files || values.files.length === 0 || isLoading}
+                  disabled={!values.files || (values.files as FileList).length === 0 || isLoading}
                 >
                   <i className="fas fa-upload me-2"></i>
                   Upload Files

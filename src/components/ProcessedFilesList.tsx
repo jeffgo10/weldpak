@@ -75,7 +75,7 @@ const ProcessedFilesList: React.FC = () => {
         </Card.Header>
         <Card.Body>
           <Row>
-            {processedFiles.map((file, index) => (
+            {processedFiles.map((file) => (
               <Col md={6} lg={4} key={file.id} className="mb-3">
                 <Card className="h-100 border">
                   <Card.Body className="d-flex flex-column">
@@ -156,7 +156,7 @@ const ProcessedFilesList: React.FC = () => {
                   <Alert variant="info">
                     <strong>Original Files:</strong>
                     <ul className="mb-0 mt-2">
-                      {selectedFile.originalFiles.map((file, index) => (
+                      {selectedFile.originalFiles.map((file) => (
                         <li key={file.id}>
                           {file.name} ({formatFileSize(file.size)})
                         </li>

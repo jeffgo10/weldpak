@@ -63,8 +63,9 @@ export const uploadFiles = createAsyncThunk(
 
 export const processFiles = createAsyncThunk(
   'files/processFiles',
-  async (files: UploadedFile[]) => {
-    return apiService.processFiles(files);
+  async (files: UploadedFile[]): Promise<ProcessedFile> => {
+    const result = await apiService.processFiles(files);
+    return result as ProcessedFile;
   }
 );
 

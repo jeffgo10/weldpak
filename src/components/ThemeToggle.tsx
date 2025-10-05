@@ -5,7 +5,7 @@ import { Dropdown } from 'react-bootstrap';
 import { useTheme } from '@/contexts/ThemeContext';
 
 const ThemeToggle: React.FC = () => {
-  const { theme, setTheme, actualTheme } = useTheme();
+  const { theme, setTheme } = useTheme();
 
   const themeOptions = [
     { value: 'light', label: 'Light', icon: 'fas fa-sun' },

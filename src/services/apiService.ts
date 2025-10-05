@@ -43,7 +43,7 @@ class ApiService {
   /**
    * Process files using the appropriate backend
    */
-  async processFiles(files: any[]): Promise<any> {
+  async processFiles(files: unknown[]): Promise<unknown> {
     const endpoint = this.getProcessFilesEndpoint();
     
     console.log(`Using API endpoint: ${endpoint}`);
@@ -67,7 +67,7 @@ class ApiService {
   /**
    * Check API health
    */
-  async checkHealth(): Promise<any> {
+  async checkHealth(): Promise<unknown> {
     const endpoint = this.getHealthEndpoint();
     
     const response = await fetch(endpoint, {

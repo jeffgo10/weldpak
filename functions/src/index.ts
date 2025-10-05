@@ -1,8 +1,7 @@
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
 import { minify } from 'terser';
-import { CleanCSS } from 'clean-css';
-import * as cron from 'node-cron';
+import CleanCSS = require('clean-css');
 
 // Initialize Firebase Admin
 admin.initializeApp();
@@ -29,7 +28,7 @@ interface ProcessingTask {
 }
 
 // Health check endpoint
-export const health = functions.https.onRequest(async (req, res) => {
+export const health = functions.https.onRequest(async (req: any, res: any) => {
   res.set('Access-Control-Allow-Origin', '*');
   res.set('Access-Control-Allow-Methods', 'GET, OPTIONS');
   res.set('Access-Control-Allow-Headers', 'Content-Type');
@@ -54,7 +53,7 @@ export const health = functions.https.onRequest(async (req, res) => {
 });
 
 // HTTP function to process files
-export const processFiles = functions.https.onRequest(async (req, res) => {
+export const processFiles = functions.https.onRequest(async (req: any, res: any) => {
   // Enable CORS
   res.set('Access-Control-Allow-Origin', '*');
   res.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
@@ -151,7 +150,7 @@ async function processFileContent(files: any[]): Promise<any> {
 export const scheduledCleanup = functions.pubsub
   .schedule('0 2 * * *')
   .timeZone('UTC')
-  .onRun(async (context) => {
+  .onRun(async (context: any) => {
     console.log('Running scheduled cleanup task');
     
     try {
@@ -178,7 +177,7 @@ export const scheduledCleanup = functions.pubsub
   });
 
 // Function to store processing task in Firestore
-export const storeProcessingTask = functions.https.onCall(async (data, context) => {
+export const storeProcessingTask = functions.https.onCall(async (data: any, context: any) => {
   try {
     const db = admin.firestore();
     const taskRef = db.collection('processingTasks').doc();
@@ -199,7 +198,7 @@ export const storeProcessingTask = functions.https.onCall(async (data, context) 
 });
 
 // Function to get processing task status
-export const getProcessingTask = functions.https.onCall(async (data, context) => {
+export const getProcessingTask = functions.https.onCall(async (data: any, context: any) => {
   try {
     const db = admin.firestore();
     const taskDoc = await db.collection('processingTasks').doc(data.taskId).get();
