@@ -6,5 +6,10 @@ export async function GET() {
     timestamp: new Date().toISOString(),
     service: 'WeldPak API',
     version: '1.0.0',
+    features: {
+      csrf: true,
+      minification: true,
+      fileProcessing: true
+    }
   });
 }

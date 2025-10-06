@@ -6,6 +6,7 @@ import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 import { useAppSelector, useAppDispatch } from '@/store/hooks';
 import { uploadFiles, processFiles, removeFile, reorderFiles, clearFiles } from '@/store/slices/fileSlice';
+import { useUserTracking } from '@/hooks/useUserTracking';
 
 interface FileUploadPanelProps {
   fileType: 'js' | 'css';
@@ -15,6 +16,7 @@ const FileUploadPanel: React.FC<FileUploadPanelProps> = ({ fileType }) => {
   const dispatch = useAppDispatch();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { uploadedFiles, isLoading, error } = useAppSelector((state) => state.files);
+  const { sessionId, location, logActivity } = useUserTracking();
 
   // Filter files by current tab
   const currentFiles = uploadedFiles.filter(file => 
@@ -36,12 +38,28 @@ const FileUploadPanel: React.FC<FileUploadPanelProps> = ({ fileType }) => {
   const handleFileUpload = async (values: { files: FileList | null }) => {
     if (values.files) {
       dispatch(uploadFiles(values.files));
+      // Log file upload activity
+      logActivity('file_upload', { 
+        fileCount: values.files.length, 
+        fileType,
+        fileNames: Array.from(values.files).map(f => f.name)
+      });
     }
   };
 
   const handleProcessFiles = async () => {
     if (currentFiles.length > 0) {
-      dispatch(processFiles(currentFiles));
+      dispatch(processFiles({ 
+        files: currentFiles, 
+        sessionId, 
+        userLocation: location 
+      }));
+      // Log file processing initiation
+      logActivity('file_processing_initiated', { 
+        fileCount: currentFiles.length, 
+        fileType,
+        totalSize: currentFiles.reduce((total, file) => total + file.size, 0)
+      });
     }
   };
 

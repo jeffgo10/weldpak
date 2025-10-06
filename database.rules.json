@@ -1,0 +1,14 @@
+{
+  "rules": {
+    "logs": {
+      ".read": "auth != null",
+      ".write": "auth != null",
+      "user_activities": {
+        ".indexOn": ["timestamp", "userId"]
+      },
+      "file_processing": {
+        ".indexOn": ["timestamp", "userId", "sessionId"]
+      }
+    }
+  }
+}

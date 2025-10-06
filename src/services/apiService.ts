@@ -41,20 +41,70 @@ class ApiService {
   }
 
   /**
+   * Get CSRF token from the API
+   */
+  private async getCSRFToken(): Promise<string> {
+    try {
+      const csrfUrl = `${this.config.nextApiUrl}/api/csrf`;
+      console.log('Fetching CSRF token from:', csrfUrl);
+      
+      const response = await fetch(csrfUrl, {
+        method: 'GET',
+        credentials: 'include',
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Failed to fetch CSRF token: ${response.status} ${response.statusText}`);
+      }
+      
+      const data = await response.json();
+      console.log('CSRF token received:', data.csrfToken ? 'Present' : 'Missing');
+      return data.csrfToken || '';
+    } catch (error) {
+      console.error('Failed to get CSRF token:', error);
+      return '';
+    }
+  }
+
+  /**
    * Process files using the appropriate backend
    */
-  async processFiles(files: unknown[]): Promise<unknown> {
+  async processFiles(files: unknown[], sessionId?: string, userLocation?: any): Promise<unknown> {
     const endpoint = this.getProcessFilesEndpoint();
     
     console.log(`Using API endpoint: ${endpoint}`);
     console.log(`Firebase Functions enabled: ${this.config.useFirebaseFunctions}`);
 
+    // Get CSRF token for Next.js API routes (not needed for Firebase Functions)
+    let csrfToken = '';
+    if (!this.config.useFirebaseFunctions) {
+      console.log('Fetching CSRF token for Next.js API route');
+      csrfToken = await this.getCSRFToken();
+      console.log('CSRF token obtained:', csrfToken ? 'Success' : 'Failed');
+    } else {
+      console.log('Skipping CSRF token (using Firebase Functions)');
+    }
+
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+
+    // Add CSRF token header for Next.js API routes
+    if (csrfToken) {
+      headers['X-CSRF-Token'] = csrfToken;
+      console.log('CSRF token added to request headers');
+    } else if (!this.config.useFirebaseFunctions) {
+      console.warn('No CSRF token available for Next.js API route');
+    }
+
     const response = await fetch(endpoint, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ files }),
+      headers,
+      body: JSON.stringify({ 
+        files, 
+        sessionId,
+        userLocation 
+      }),
     });
 
     if (!response.ok) {

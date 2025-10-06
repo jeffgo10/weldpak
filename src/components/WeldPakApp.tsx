@@ -8,14 +8,20 @@ import FileUploadPanel from './FileUploadPanel';
 import ProcessedFilesList from './ProcessedFilesList';
 import ApiStatusIndicator from './ApiStatusIndicator';
 import ThemeToggle from './ThemeToggle';
+import LocationIndicator from './LocationIndicator';
+import DevDebugPanel from './DevDebugPanel';
+import { useUserTracking } from '@/hooks/useUserTracking';
 
 const WeldPakApp: React.FC = () => {
   const dispatch = useAppDispatch();
   const { activeTab } = useAppSelector((state) => state.files);
+  const { sessionId, location, logActivity } = useUserTracking();
 
   const handleTabSelect = (tabKey: string | null) => {
     if (tabKey === 'js' || tabKey === 'css') {
       dispatch(setActiveTab(tabKey));
+      // Log tab switch activity
+      logActivity('tab_switch', { tab: tabKey });
     }
   };
 
@@ -24,10 +30,15 @@ const WeldPakApp: React.FC = () => {
       <Container fluid className="py-4">
         <Row className="justify-content-center">
           <Col lg={10} xl={8}>
-            {/* Theme Toggle */}
-            <div className="d-flex justify-content-end mb-3">
+            {/* Theme Toggle and Location */}
+            <div className="d-flex justify-content-between align-items-center mb-3">
+              <LocationIndicator />
               <ThemeToggle />
             </div>
+            
+            {/* Development Debug Panel */}
+            <DevDebugPanel />
+            
             {/* Header */}
             <div className="text-center mb-5">
               <h1 className="display-4 fw-bold text-primary mb-3">
