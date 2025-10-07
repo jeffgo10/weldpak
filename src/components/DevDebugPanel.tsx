@@ -6,13 +6,13 @@ import { useUserTracking } from '@/hooks/useUserTracking';
 import { testLogging } from '@/services/loggingService';
 
 const DevDebugPanel: React.FC = () => {
+  const { sessionId, location, isLocationLoading, error, logActivity } = useUserTracking();
+  const [showDetails, setShowDetails] = useState(false);
+
   // Only show in development mode
   if (process.env.NODE_ENV !== 'development') {
     return null;
   }
-
-  const { sessionId, location, isLocationLoading, error, logActivity } = useUserTracking();
-  const [showDetails, setShowDetails] = useState(false);
 
   const testLogActivity = () => {
     logActivity('test_activity', { 

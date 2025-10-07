@@ -1,16 +1,22 @@
-import { getDatabase, ref, push, set, serverTimestamp } from 'firebase/database';
+import { getDatabase, ref, set } from 'firebase/database';
 import { initializeApp, getApps } from 'firebase/app';
 
 // Initialize Firebase if not already initialized
+// Detect if we're running on production domain
+const isProductionDomain = typeof window !== 'undefined' && 
+  (window.location.hostname === 'weldpak.web.app' || 
+   window.location.hostname === 'weldpak.firebaseapp.com' ||
+   window.location.hostname.includes('weldpak'));
+
 const firebaseConfig = {
-  // These should be set in your environment variables
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-  databaseURL: process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL || 'http://localhost:9000?ns=demo-project-default-rtdb',
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || 'demo-project',
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+  // Use production values for deployed app, fallback to local for development
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || (isProductionDomain ? "AIzaSyCYsHkGBaA07huefQ99tCj-psKlLNeCP2Y" : "demo-api-key"),
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || (isProductionDomain ? "weldpak.firebaseapp.com" : "demo-project.firebaseapp.com"),
+  databaseURL: process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL || (isProductionDomain ? 'https://weldpak-default-rtdb.asia-southeast1.firebasedatabase.app' : 'http://localhost:9000?ns=demo-project-default-rtdb'),
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || (isProductionDomain ? 'weldpak' : 'demo-project'),
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || (isProductionDomain ? "weldpak.firebasestorage.app" : "demo-project.appspot.com"),
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || (isProductionDomain ? "672653003025" : "123456789"),
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID || (isProductionDomain ? "1:672653003025:web:c97b5117f0e2af41fb24b0" : "1:123456789:web:abcdef"),
 };
 
 console.log('🔥 Firebase Config:', {
@@ -35,15 +41,14 @@ async function connectToEmulator() {
     try {
       const { connectDatabaseEmulator } = await import('firebase/database');
       
-      // Check if already connected to emulator
-      const isConnected = database._delegate._database._app._delegate._databaseEmulator;
-      
-      if (!isConnected) {
+      // Connect to emulator (will throw error if already connected)
+      try {
         connectDatabaseEmulator(database, 'localhost', 9000);
         console.log('🔥 Connected to Firebase Realtime Database emulator');
         console.log('📊 Database URL: http://localhost:9000');
         console.log('🎛️  Emulator UI: http://localhost:4000');
-      } else {
+      } catch {
+        // Already connected to emulator, ignore error
         console.log('🔥 Already connected to Firebase emulator');
       }
     } catch (error) {
@@ -51,7 +56,8 @@ async function connectToEmulator() {
     }
   } else {
     console.log('🔥 Using production Firebase Realtime Database');
-    console.log('📊 Database URL:', process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL);
+    console.log('📊 Database URL:', firebaseConfig.databaseURL);
+    console.log('🌍 Project ID:', firebaseConfig.projectId);
   }
 }
 
@@ -95,7 +101,7 @@ export interface UserActivityLog {
   timestamp: string;
   location: UserLocation;
   activity: 'page_visit' | 'file_upload' | 'file_processing' | 'download' | 'error';
-  details?: Record<string, any>;
+  details?: Record<string, unknown>;
   userAgent: string;
   ipAddress?: string;
 }
@@ -125,15 +131,16 @@ export async function logFileProcessing(processingData: Omit<FileProcessingLog, 
     };
     
     console.log('📝 Writing to Firebase path:', `logs/file_processing/${processingData.sessionId}`);
+    console.log('📝 Log entry data:', JSON.stringify(logEntry, null, 2));
     await set(logRef, logEntry);
     console.log('✅ File processing logged successfully with session ID:', processingData.sessionId);
-    console.log('📊 Check Firebase at: http://localhost:4000');
+    console.log('📊 Check Firebase at: https://console.firebase.google.com/project/weldpak/database/weldpak-default-rtdb/data');
   } catch (error) {
     console.error('❌ Failed to log file processing:', error);
     console.error('🔍 Error details:', {
-      message: error.message,
-      code: error.code,
-      stack: error.stack
+      message: error instanceof Error ? error.message : 'Unknown error',
+      code: (error as { code?: string })?.code,
+      stack: error instanceof Error ? error.stack : undefined
     });
     // Don't throw error to avoid breaking the main functionality
   }
@@ -152,8 +159,11 @@ export async function logUserActivity(activityData: Omit<UserActivityLog, 'times
       timestamp: new Date().toISOString(),
     };
     
+    console.log('📝 Writing to Firebase path:', `logs/user_activities/${activityData.sessionId}`);
+    console.log('📝 Activity entry data:', JSON.stringify(logEntry, null, 2));
     await set(logRef, logEntry);
-    console.log('User activity logged successfully with session ID:', activityData.sessionId);
+    console.log('✅ User activity logged successfully with session ID:', activityData.sessionId);
+    console.log('📊 Check Firebase at: https://console.firebase.google.com/project/weldpak/database/weldpak-default-rtdb/data');
   } catch (error) {
     console.error('Failed to log user activity:', error);
     // Don't throw error to avoid breaking the main functionality
@@ -303,7 +313,7 @@ export async function testLogging(): Promise<void> {
     await logUserActivity({
       sessionId: testSessionId,
       location: testLocation,
-      activity: 'test_activity',
+      activity: 'file_processing',
       details: { test: true, timestamp: new Date().toISOString() },
       userAgent: navigator.userAgent,
       ipAddress: '127.0.0.1',

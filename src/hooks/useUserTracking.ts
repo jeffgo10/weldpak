@@ -69,7 +69,7 @@ export function useUserTracking() {
   }, []);
 
   // Function to log custom activities
-  const logActivity = useCallback(async (activity: string, details?: Record<string, any>) => {
+  const logActivity = useCallback(async (activity: string, details?: Record<string, unknown>) => {
     if (!state.sessionId || !state.location) {
       console.warn('Cannot log activity: session or location not initialized');
       return;
@@ -79,7 +79,7 @@ export function useUserTracking() {
       await logUserActivity({
         sessionId: state.sessionId,
         location: state.location,
-        activity: activity as any,
+        activity: activity as 'page_visit' | 'file_upload' | 'file_processing' | 'download' | 'error',
         details,
         userAgent: navigator.userAgent,
       });

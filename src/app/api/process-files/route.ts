@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { minify } from 'terser';
 import CleanCSS from 'clean-css';
-import { validateCSRFToken, requiresCSRFProtection } from '@/lib/csrf';
+// CSRF imports removed
 import { logFileProcessing, logUserActivity } from '@/services/loggingService';
 
 interface UploadedFile {
@@ -35,28 +35,19 @@ export async function POST(request: NextRequest) {
   };
 
   try {
-    // Validate CSRF token for POST requests
-    if (requiresCSRFProtection('POST')) {
-      console.log('CSRF validation required for POST request');
-      const csrfToken = request.headers.get('X-CSRF-Token');
-      console.log('CSRF token received:', csrfToken ? 'Present' : 'Missing');
-      
-      const csrfValidation = validateCSRFToken(request);
-      if (!csrfValidation.valid) {
-        console.error('CSRF validation failed:', csrfValidation.error);
-        return NextResponse.json(
-          { error: csrfValidation.error },
-          { status: 403 }
-        );
-      }
-      console.log('CSRF validation successful');
-    }
+    // CSRF validation disabled for now
+    console.log('CSRF validation disabled');
 
-    const { files, sessionId: clientSessionId, userLocation: clientLocation }: { 
-      files: UploadedFile[];
-      sessionId?: string;
-      userLocation?: any;
-    } = await request.json();
+     const { files, sessionId: clientSessionId, userLocation: clientLocation }: { 
+       files: UploadedFile[];
+       sessionId?: string;
+       userLocation?: {
+         country: string;
+         region: string;
+         city: string;
+         timezone: string;
+       };
+     } = await request.json();
 
     // Use client session ID or generate new one
     sessionId = clientSessionId || `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;

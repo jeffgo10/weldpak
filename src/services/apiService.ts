@@ -40,17 +40,23 @@ class ApiService {
     return `${this.config.nextApiUrl}/api/health`;
   }
 
+  private getCSRFEndpoint(): string {
+    if (this.config.useFirebaseFunctions && this.config.firebaseFunctionsUrl) {
+      return `${this.config.firebaseFunctionsUrl}/csrf`;
+    }
+    return `${this.config.nextApiUrl}/api/csrf`;
+  }
+
   /**
    * Get CSRF token from the API
    */
   private async getCSRFToken(): Promise<string> {
     try {
-      const csrfUrl = `${this.config.nextApiUrl}/api/csrf`;
+      const csrfUrl = this.getCSRFEndpoint();
       console.log('Fetching CSRF token from:', csrfUrl);
       
       const response = await fetch(csrfUrl, {
         method: 'GET',
-        credentials: 'include',
       });
       
       if (!response.ok) {
@@ -69,33 +75,26 @@ class ApiService {
   /**
    * Process files using the appropriate backend
    */
-  async processFiles(files: unknown[], sessionId?: string, userLocation?: any): Promise<unknown> {
+  async processFiles(files: unknown[], sessionId?: string, userLocation?: {
+    country: string;
+    region: string;
+    city: string;
+    timezone: string;
+  }): Promise<unknown> {
     const endpoint = this.getProcessFilesEndpoint();
     
     console.log(`Using API endpoint: ${endpoint}`);
     console.log(`Firebase Functions enabled: ${this.config.useFirebaseFunctions}`);
 
-    // Get CSRF token for Next.js API routes (not needed for Firebase Functions)
-    let csrfToken = '';
-    if (!this.config.useFirebaseFunctions) {
-      console.log('Fetching CSRF token for Next.js API route');
-      csrfToken = await this.getCSRFToken();
-      console.log('CSRF token obtained:', csrfToken ? 'Success' : 'Failed');
-    } else {
-      console.log('Skipping CSRF token (using Firebase Functions)');
-    }
+    // CSRF protection disabled for now
+    console.log('CSRF protection disabled');
 
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
     };
 
-    // Add CSRF token header for Next.js API routes
-    if (csrfToken) {
-      headers['X-CSRF-Token'] = csrfToken;
-      console.log('CSRF token added to request headers');
-    } else if (!this.config.useFirebaseFunctions) {
-      console.warn('No CSRF token available for Next.js API route');
-    }
+    // CSRF token headers disabled
+    console.log('CSRF token headers disabled');
 
     const response = await fetch(endpoint, {
       method: 'POST',

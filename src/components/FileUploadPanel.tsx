@@ -52,7 +52,12 @@ const FileUploadPanel: React.FC<FileUploadPanelProps> = ({ fileType }) => {
       dispatch(processFiles({ 
         files: currentFiles, 
         sessionId, 
-        userLocation: location 
+        userLocation: location ? {
+          country: location.country || 'Unknown',
+          region: location.region || 'Unknown',
+          city: location.city || 'Unknown',
+          timezone: location.timezone || 'Unknown'
+        } : undefined
       }));
       // Log file processing initiation
       logActivity('file_processing_initiated', { 

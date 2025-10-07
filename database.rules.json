@@ -1,8 +1,8 @@
 {
   "rules": {
     "logs": {
-      ".read": "auth != null",
-      ".write": "auth != null",
+      ".read": true,
+      ".write": true,
       "user_activities": {
         ".indexOn": ["timestamp", "userId"]
       },

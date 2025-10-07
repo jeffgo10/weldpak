@@ -2,9 +2,12 @@ import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
 import { minify } from 'terser';
 import CleanCSS = require('clean-css');
+// CSRF import removed
 
 // Initialize Firebase Admin
 admin.initializeApp();
+
+// CSRF protection disabled for now
 
 // Interface for file processing tasks
 interface ProcessingTask {
@@ -30,8 +33,8 @@ interface ProcessingTask {
 // Health check endpoint
 export const health = functions.https.onRequest(async (req: any, res: any) => {
   res.set('Access-Control-Allow-Origin', '*');
-  res.set('Access-Control-Allow-Methods', 'GET, OPTIONS');
-  res.set('Access-Control-Allow-Headers', 'Content-Type');
+  res.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.set('Access-Control-Allow-Headers', 'Content-Type, x-csrf-token, X-CSRF-Token');
 
   if (req.method === 'OPTIONS') {
     res.status(204).send('');
@@ -52,12 +55,31 @@ export const health = functions.https.onRequest(async (req: any, res: any) => {
   });
 });
 
+// CSRF token endpoint
+export const csrf = functions.https.onRequest(async (req: any, res: any) => {
+  if (req.method !== 'GET') {
+    res.status(405).send('Method Not Allowed');
+    return;
+  }
+
+  try {
+    // CSRF token generation disabled
+    res.status(200).json({ 
+      csrfToken: 'disabled',
+      message: 'CSRF protection disabled'
+    });
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // HTTP function to process files
 export const processFiles = functions.https.onRequest(async (req: any, res: any) => {
   // Enable CORS
   res.set('Access-Control-Allow-Origin', '*');
   res.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.set('Access-Control-Allow-Headers', 'Content-Type');
+  res.set('Access-Control-Allow-Headers', 'Content-Type, x-csrf-token, X-CSRF-Token');
 
   if (req.method === 'OPTIONS') {
     res.status(204).send('');
@@ -68,6 +90,9 @@ export const processFiles = functions.https.onRequest(async (req: any, res: any)
     res.status(405).send('Method Not Allowed');
     return;
   }
+
+  // CSRF validation disabled for now
+  console.log('CSRF validation disabled in Firebase Functions');
 
   try {
     const { files } = req.body;

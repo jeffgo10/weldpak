@@ -5,12 +5,12 @@ import { Badge, Spinner } from 'react-bootstrap';
 import { useUserTracking } from '@/hooks/useUserTracking';
 
 const LocationIndicator: React.FC = () => {
+  const { location, isLocationLoading, error } = useUserTracking();
+
   // Only show location badge in development mode
   if (process.env.NODE_ENV !== 'development') {
     return null;
   }
-
-  const { location, isLocationLoading, error } = useUserTracking();
 
   if (isLocationLoading) {
     return (

@@ -15,7 +15,7 @@ import { useUserTracking } from '@/hooks/useUserTracking';
 const WeldPakApp: React.FC = () => {
   const dispatch = useAppDispatch();
   const { activeTab } = useAppSelector((state) => state.files);
-  const { sessionId, location, logActivity } = useUserTracking();
+  const { logActivity } = useUserTracking();
 
   const handleTabSelect = (tabKey: string | null) => {
     if (tabKey === 'js' || tabKey === 'css') {
