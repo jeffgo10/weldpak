@@ -1,23 +1,33 @@
 import { getDatabase, ref, set } from 'firebase/database';
 import { initializeApp, getApps } from 'firebase/app';
 
-// Initialize Firebase if not already initialized
-// Detect if we're running on production domain
-const isProductionDomain = typeof window !== 'undefined' && 
-  (window.location.hostname === 'weldpak.web.app' || 
-   window.location.hostname === 'weldpak.firebaseapp.com' ||
-   window.location.hostname.includes('weldpak'));
-
+// Initialize Firebase using environment variables only
 const firebaseConfig = {
-  // Use production values for deployed app, fallback to local for development
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || (isProductionDomain ? "AIzaSyCYsHkGBaA07huefQ99tCj-psKlLNeCP2Y" : "demo-api-key"),
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || (isProductionDomain ? "weldpak.firebaseapp.com" : "demo-project.firebaseapp.com"),
-  databaseURL: process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL || (isProductionDomain ? 'https://weldpak-default-rtdb.asia-southeast1.firebasedatabase.app' : 'http://localhost:9000?ns=demo-project-default-rtdb'),
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || (isProductionDomain ? 'weldpak' : 'demo-project'),
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || (isProductionDomain ? "weldpak.firebasestorage.app" : "demo-project.appspot.com"),
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || (isProductionDomain ? "672653003025" : "123456789"),
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID || (isProductionDomain ? "1:672653003025:web:c97b5117f0e2af41fb24b0" : "1:123456789:web:abcdef"),
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  databaseURL: process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
+
+// Validate required environment variables
+const requiredEnvVars = [
+  'NEXT_PUBLIC_FIREBASE_API_KEY',
+  'NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN', 
+  'NEXT_PUBLIC_FIREBASE_DATABASE_URL',
+  'NEXT_PUBLIC_FIREBASE_PROJECT_ID',
+  'NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET',
+  'NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID',
+  'NEXT_PUBLIC_FIREBASE_APP_ID'
+];
+
+const missingEnvVars = requiredEnvVars.filter(envVar => !process.env[envVar]);
+if (missingEnvVars.length > 0) {
+  console.error('❌ Missing required Firebase environment variables:', missingEnvVars);
+  console.error('Please set these variables in your .env file');
+}
 
 console.log('🔥 Firebase Config:', {
   projectId: firebaseConfig.projectId,
@@ -320,7 +330,7 @@ export async function testLogging(): Promise<void> {
     });
 
     console.log('✅ Test logging completed successfully');
-    console.log('📊 Check Firebase Realtime Database at:', 'http://localhost:4000');
+    console.log('📊 Check Firebase Realtime Database at:', process.env.NODE_ENV === 'development' ? 'http://localhost:4000' : 'https://console.firebase.google.com/project/' + firebaseConfig.projectId + '/database');
     console.log('🔑 Session ID used:', testSessionId);
     console.log('🗂️  Check path: logs/user_activities/' + testSessionId);
   } catch (error) {
