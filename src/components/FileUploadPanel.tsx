@@ -7,6 +7,11 @@ import * as Yup from 'yup';
 import { useAppSelector, useAppDispatch } from '@/store/hooks';
 import { uploadFiles, processFiles, removeFile, reorderFiles, clearFiles } from '@/store/slices/fileSlice';
 import { useUserTracking } from '@/hooks/useUserTracking';
+import { Card as ShadcnCard, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
+import { Button as ShadcnButton } from './ui/button';
+import { Badge as ShadcnBadge } from './ui/badge';
+import { Alert as ShadcnAlert, AlertDescription } from './ui/alert';
+import { Upload, File, X, CheckCircle, AlertCircle, Loader2, GripVertical, Trash2, Minimize2 } from 'lucide-react';
 
 interface FileUploadPanelProps {
   fileType: 'js' | 'css';
@@ -103,19 +108,24 @@ const FileUploadPanel: React.FC<FileUploadPanelProps> = ({ fileType }) => {
   };
 
   return (
-    <Card className="shadow-sm">
-      <Card.Header className="bg-primary text-white">
-        <h5 className="mb-0">
-          <i className={`fab fa-${fileType === 'js' ? 'js-square' : 'css3-alt'} me-2`}></i>
+    <ShadcnCard className="shadow-sm" style={{ backgroundColor: 'var(--card)', color: 'var(--card-foreground)', borderColor: 'var(--border)' }}>
+      <CardHeader style={{ backgroundColor: 'var(--card)' }}>
+        <CardTitle className="flex items-center gap-2" style={{ color: 'var(--card-foreground)' }}>
+          <File className="h-5 w-5" />
           Upload {fileType.toUpperCase()} Files
-        </h5>
-      </Card.Header>
-      <Card.Body>
+        </CardTitle>
+        <CardDescription style={{ color: 'var(--muted-foreground)' }}>
+          Select multiple {fileType.toUpperCase()} files to combine and minify
+        </CardDescription>
+      </CardHeader>
+      <CardContent style={{ backgroundColor: 'var(--card)', color: 'var(--card-foreground)' }}>
         {error && (
-          <Alert variant="danger" className="mb-3">
-            <i className="fas fa-exclamation-triangle me-2"></i>
-            {error}
-          </Alert>
+          <ShadcnAlert variant="destructive" className="mb-3">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              {error}
+            </AlertDescription>
+          </ShadcnAlert>
         )}
 
         <Formik
@@ -162,33 +172,50 @@ const FileUploadPanel: React.FC<FileUploadPanelProps> = ({ fileType }) => {
                 </Field>
               </div>
 
-              <div className="d-flex gap-2 mb-4">
-                <Button
+              <div className="flex gap-2 mb-4">
+                <ShadcnButton
                   type="submit"
-                  variant="primary"
                   disabled={!values.files || (values.files as FileList).length === 0 || isLoading}
                 >
-                  <i className="fas fa-upload me-2"></i>
-                  Upload Files
-                </Button>
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Uploading...
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="h-4 w-4 mr-2" />
+                      Upload Files
+                    </>
+                  )}
+                </ShadcnButton>
                 
                 {currentFiles.length > 0 && (
                   <>
-                    <Button
-                      variant="success"
+                    <ShadcnButton
+                      variant="default"
                       onClick={handleProcessFiles}
                       disabled={isLoading}
                     >
-                      <i className="fas fa-compress me-2"></i>
-                      {isLoading ? 'Processing...' : 'Combine & Minify'}
-                    </Button>
-                    <Button
-                      variant="outline-secondary"
+                      {isLoading ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Processing...
+                        </>
+                      ) : (
+                        <>
+                          <Minimize2 className="h-4 w-4 mr-2" />
+                          Combine & Minify
+                        </>
+                      )}
+                    </ShadcnButton>
+                    <ShadcnButton
+                      variant="outline"
                       onClick={() => dispatch(clearFiles())}
                     >
-                      <i className="fas fa-trash me-2"></i>
+                      <Trash2 className="h-4 w-4 mr-2" />
                       Clear All
-                    </Button>
+                    </ShadcnButton>
                   </>
                 )}
               </div>
@@ -199,56 +226,64 @@ const FileUploadPanel: React.FC<FileUploadPanelProps> = ({ fileType }) => {
         {/* File List */}
         {currentFiles.length > 0 && (
           <div className="mt-4">
-            <h6 className="mb-3">
-              <i className="fas fa-list me-2"></i>
-              Uploaded Files ({currentFiles.length})
-              <Badge bg="info" className="ms-2">
+            <div className="flex items-center justify-between mb-3">
+              <h6 className="flex items-center gap-2" style={{ color: 'var(--foreground)' }}>
+                <File className="h-4 w-4" />
+                Uploaded Files ({currentFiles.length})
+              </h6>
+              <ShadcnBadge variant="secondary">
                 Total: {formatFileSize(getTotalSize())}
-              </Badge>
-            </h6>
+              </ShadcnBadge>
+            </div>
             
-            <ListGroup>
+            <div className="space-y-2">
               {currentFiles
                 .sort((a, b) => a.order - b.order)
                 .map((file, index) => (
-                  <ListGroup.Item
+                  <div
                     key={file.id}
-                    className="d-flex justify-content-between align-items-center"
+                    className="flex items-center justify-between p-3 rounded-md border"
+                    style={{ 
+                      backgroundColor: 'var(--muted)', 
+                      borderColor: 'var(--border)',
+                      cursor: 'move'
+                    }}
                     draggable
                     onDragStart={(e) => handleDragStart(e, index)}
                     onDragOver={handleDragOver}
                     onDrop={(e) => handleDrop(e, index)}
-                    style={{ cursor: 'move' }}
                   >
-                    <div className="d-flex align-items-center">
-                      <i className={`fas fa-grip-vertical text-muted me-3`}></i>
-                      <i className={`fab fa-${fileType === 'js' ? 'js-square' : 'css3-alt'} text-primary me-2`}></i>
-                      <span className="fw-medium">{file.name}</span>
-                      <Badge bg="secondary" className="ms-2">
-                        {formatFileSize(file.size)}
-                      </Badge>
+                    <div className="flex items-center gap-3">
+                      <GripVertical className="h-4 w-4" style={{ color: 'var(--muted-foreground)' }} />
+                      <File className="h-4 w-4" style={{ color: 'var(--primary)' }} />
+                      <div>
+                        <div className="font-medium" style={{ color: 'var(--foreground)' }}>{file.name}</div>
+                        <ShadcnBadge variant="outline" className="text-xs">
+                          {formatFileSize(file.size)}
+                        </ShadcnBadge>
+                      </div>
                     </div>
-                    <Button
-                      variant="outline-danger"
+                    <ShadcnButton
+                      variant="outline"
                       size="sm"
                       onClick={() => handleRemoveFile(file.id)}
                     >
-                      <i className="fas fa-times"></i>
-                    </Button>
-                  </ListGroup.Item>
+                      <X className="h-4 w-4" />
+                    </ShadcnButton>
+                  </div>
                 ))}
-            </ListGroup>
+            </div>
             
-            <div className="mt-3 text-muted">
-              <small>
-                <i className="fas fa-info-circle me-1"></i>
+            <div className="mt-3 text-sm text-muted-foreground">
+              <div className="flex items-center gap-1">
+                <AlertCircle className="h-3 w-3" />
                 Drag and drop to reorder files. Files will be combined in the order shown above.
-              </small>
+              </div>
             </div>
           </div>
         )}
-      </Card.Body>
-    </Card>
+      </CardContent>
+    </ShadcnCard>
   );
 };
 

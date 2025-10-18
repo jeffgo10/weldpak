@@ -35,9 +35,21 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
     if (newTheme === 'system') {
       const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
       root.setAttribute('data-bs-theme', systemTheme);
+      // Also set Tailwind dark class
+      if (systemTheme === 'dark') {
+        root.classList.add('dark');
+      } else {
+        root.classList.remove('dark');
+      }
       setActualTheme(systemTheme);
     } else {
       root.setAttribute('data-bs-theme', newTheme);
+      // Also set Tailwind dark class
+      if (newTheme === 'dark') {
+        root.classList.add('dark');
+      } else {
+        root.classList.remove('dark');
+      }
       setActualTheme(newTheme);
     }
   };

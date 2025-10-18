@@ -11,11 +11,11 @@ if ! command -v firebase &> /dev/null; then
 fi
 
 # Check if .env.local exists
-if [ ! -f .env.local ]; then
-    echo "⚠️  .env.local not found. Creating from template..."
-    cp env.example .env.local
-    echo "✅ Created .env.local from env.example"
-    echo "📝 Please review and update .env.local with your Firebase configuration"
+if [ ! -f .env ]; then
+    echo "⚠️  .env not found. Creating from template..."
+    cp env.example .env
+    echo "✅ Created .env from env.example"
+    echo "📝 Please review and update .env with your Firebase configuration"
 fi
 
 echo ""
@@ -54,9 +54,28 @@ echo ""
 cleanup() {
     echo ""
     echo "🛑 Stopping servers..."
-    kill $EMULATOR_PID 2>/dev/null
-    kill $DEV_PID 2>/dev/null
-    echo "✅ Servers stopped"
+    
+    # Kill the emulator process and all its children
+    if [ ! -z "$EMULATOR_PID" ]; then
+        pkill -P $EMULATOR_PID 2>/dev/null
+        kill $EMULATOR_PID 2>/dev/null
+    fi
+    
+    # Kill the dev server process and all its children
+    if [ ! -z "$DEV_PID" ]; then
+        pkill -P $DEV_PID 2>/dev/null
+        kill $DEV_PID 2>/dev/null
+    fi
+    
+    # Also kill any remaining Firebase emulator processes
+    pkill -f "firebase emulators" 2>/dev/null
+    
+    # Kill any node processes on ports 3000, 4000, 9000 to be extra sure
+    lsof -ti:3000 | xargs kill -9 2>/dev/null
+    lsof -ti:4000 | xargs kill -9 2>/dev/null
+    lsof -ti:9000 | xargs kill -9 2>/dev/null
+    
+    echo "✅ All servers stopped"
     exit 0
 }
 

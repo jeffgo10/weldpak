@@ -1,7 +1,7 @@
 import { getDatabase, ref, set } from 'firebase/database';
 import { initializeApp, getApps } from 'firebase/app';
 
-// Initialize Firebase using environment variables only
+// Initialize Firebase configuration from environment variables only
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
   authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
@@ -24,6 +24,7 @@ const requiredEnvVars = [
 ];
 
 const missingEnvVars = requiredEnvVars.filter(envVar => !process.env[envVar]);
+console.log('process.env', process.env);
 if (missingEnvVars.length > 0) {
   console.error('❌ Missing required Firebase environment variables:', missingEnvVars);
   console.error('Please set these variables in your .env file');
@@ -45,7 +46,7 @@ if (getApps().length === 0) {
 // Use emulator in development mode
 const database = getDatabase(app);
 
-// Function to connect to emulator
+// Function to connect to emulator in development mode
 async function connectToEmulator() {
   if (process.env.NODE_ENV === 'development' && typeof window !== 'undefined') {
     try {
@@ -54,15 +55,17 @@ async function connectToEmulator() {
       // Connect to emulator (will throw error if already connected)
       try {
         connectDatabaseEmulator(database, 'localhost', 9000);
-        console.log('🔥 Connected to Firebase Realtime Database emulator');
-        console.log('📊 Database URL: http://localhost:9000');
+        console.log('✅ Connected to Firebase Realtime Database emulator');
+        console.log('📊 Emulator Database URL: http://localhost:9000');
         console.log('🎛️  Emulator UI: http://localhost:4000');
+        console.log('💡 All data will be stored in the local emulator (not production)');
       } catch {
         // Already connected to emulator, ignore error
-        console.log('🔥 Already connected to Firebase emulator');
+        console.log('✅ Already connected to Firebase emulator');
       }
     } catch (error) {
-      console.warn('Could not connect to Firebase Realtime Database emulator:', error);
+      console.warn('⚠️  Could not connect to Firebase Realtime Database emulator:', error);
+      console.warn('Make sure Firebase emulators are running: npm run firebase:emulators:db');
     }
   } else {
     console.log('🔥 Using production Firebase Realtime Database');
